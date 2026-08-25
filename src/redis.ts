@@ -39,3 +39,28 @@ export const deleteCachedUser = async(userId:IUserId) => {
     const cachedUser = await (await client).DEL(`user:${userId}`);
     return cachedUser;
 }
+
+export const createRateLimitCache = async (ip:string, time: number) => {
+    if(!ip) return null;
+
+    await (await client).SET(`rate-limit:ip:${ip}`, 1);
+    await (await client).EXPIRE(`rate-limit:ip:${ip}`, time);
+}
+
+export const getRateLimitCache = async (ip:string) => {
+    if(!ip) return null;
+    
+    return await (await client).GET(`rate-limit:ip:${ip}`);
+}
+
+export const increamenttRateLimitCache = async(ip:string) => {
+    if(!ip) return null;
+
+    return await (await client).INCR(`rate-limit:ip:${ip}`);
+}
+
+export const decreamentRateLimitCache = async(ip:string) => {
+    if(!ip) return null;
+
+    return await (await client).DECR(`rate-limit:ip:${ip}`);
+}
