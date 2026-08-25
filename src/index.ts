@@ -1,6 +1,7 @@
 import express from "express";
 import { Types } from "mongoose";
 import { connectToDB } from "./db.js";
+import { rateLimiter } from "./middleware.js";
 import { cacheUser, deleteCachedUser, getCachedUser } from "./redis.js";
 import { User } from "./schema.js";
 
@@ -13,11 +14,11 @@ type IUpdate = {
 
 app.use(express.json());
 
-app.get("/", (_,res) => {
-    res.json({msg: "working"});
-} )
+app.get("/", (req,res) => {
+    res.json({msg: "working", ip: req.ip});
+})
 
-app.post("/users", async (req,res) => {
+app.post("/users", await rateLimiter(5,60), async (req,res) => {
     // get the email and password
     const {email, password, city, contact} = req.body;
     
@@ -89,9 +90,9 @@ app.post("/users", async (req,res) => {
 //     })
 // })
 
-app.get("/users/:id", async(req,res) => {
+app.get("/users/:id", await rateLimiter(60,60) , async(req,res) => {
     const { id } = req.params;
-    const userId = new Types.ObjectId(id);
+    const userId = new Types.ObjectId(id as string);
     const cachedUser = await getCachedUser(userId);
 
     let user:any = null;
@@ -116,7 +117,7 @@ app.get("/users/:id", async(req,res) => {
 })
 
 
-app.put("/users/:id", async (req,res) => {
+app.put("/users/:id",await rateLimiter(20,60), async (req,res) => {
     const {city, contact} = req.body;
     const {id} = req.params;
 
@@ -142,8 +143,8 @@ app.put("/users/:id", async (req,res) => {
     
     // now update the cache or we can just delete the cache and when user reqs it will then cached
     // will just update the data directly (if user's cache is available)
-    await deleteCachedUser(new Types.ObjectId(id));
-    await cacheUser(new Types.ObjectId(id), updatedUser);
+    await deleteCachedUser(new Types.ObjectId(id as string));
+    await cacheUser(new Types.ObjectId(id as string), updatedUser);
     
     return res.status(200).json({
         message: "User data updated",
@@ -152,7 +153,7 @@ app.put("/users/:id", async (req,res) => {
 
 })
 
-app.delete("/users/:id", async (req,res) => {
+app.delete("/users/:id", await rateLimiter(10,60), async (req,res) => {
     const {id} = req.params;
 
     const user = await User.findOneAndDelete({_id: id});
@@ -165,7 +166,7 @@ app.delete("/users/:id", async (req,res) => {
     }
 
     // deleting cache before returing
-    await deleteCachedUser(new Types.ObjectId(id));
+    await deleteCachedUser(new Types.ObjectId(id as string));
 
     return res.status(200).json({
         message: "User deleted"
