@@ -1,5 +1,6 @@
 import { createClient } from "redis";
 import { IUser } from "./schema.js";
+import { Types } from "mongoose";
 
 export const createRedisClient = async () => {
     const client = await createClient()
@@ -11,8 +12,9 @@ export const createRedisClient = async () => {
 
 
 const client = createRedisClient();
+type IUserId = Types.ObjectId;
 
-export const cacheUser = async (userId:string, user:IUser) => {
+export const cacheUser = async (userId:IUserId, user:IUser) => {
     if(!userId) return null;
 
     await (await client).SET(`user:${userId}`, JSON.stringify(user));
@@ -21,7 +23,7 @@ export const cacheUser = async (userId:string, user:IUser) => {
     return true;
 }
 
-export const getCachedUser = async(userId:string) => {
+export const getCachedUser = async(userId:IUserId) => {
     if(!userId) return null;
 
     const rawCachedUser = await (await client).GET(`user:${userId}`);
@@ -31,7 +33,7 @@ export const getCachedUser = async(userId:string) => {
     return cachedUser;
 }
 
-export const deleteCachedUser = async(userId:string) => {
+export const deleteCachedUser = async(userId:IUserId) => {
     if(!userId) return null;
 
     const cachedUser = await (await client).DEL(`user:${userId}`);

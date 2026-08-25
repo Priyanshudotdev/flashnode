@@ -1,6 +1,7 @@
 import express from "express";
+import { Types } from "mongoose";
 import { connectToDB } from "./db.js";
-import { createRedisClient } from "./redis.js";
+import { cacheUser, deleteCachedUser, getCachedUser } from "./redis.js";
 import { User } from "./schema.js";
 
 const app = express();
@@ -11,8 +12,6 @@ type IUpdate = {
 }
 
 app.use(express.json());
-
-const client = createRedisClient();
 
 app.get("/", (_,res) => {
     res.json({msg: "working"});
@@ -36,8 +35,12 @@ app.post("/users", async (req,res) => {
 
     // if exists then return the userId
     if(isUserExist){
-        //store it in redis
-        await (await client).SET(`user:${isUserExist._id}`, JSON.stringify(isUserExist));
+        // get from cache
+        const isCached = await getCachedUser(isUserExist._id);
+        if(!isCached){
+            //store it in redis
+            await cacheUser(isUserExist._id, isUserExist);
+        }
         return res.status(200).json({
             message: "account already exists",
             userId : isUserExist._id
@@ -54,7 +57,7 @@ app.post("/users", async (req,res) => {
     const userId = user._id;
     
     //store it in redis
-    await (await client).SET(`user:${userId}`, JSON.stringify(user));
+    await cacheUser(userId, user);
 
     return res.status(201).json({
         message: "User created successfully",
@@ -63,37 +66,33 @@ app.post("/users", async (req,res) => {
 
 })
 
-app.get("/users", async(req,res) => {
+// app.get("/users", async(req,res) => {
 
-    const rawCachedUsers = await (await client).GET("users");
-    if(!rawCachedUsers){
-        const users = await User.find();    
-        if(!users){
-            return res.status(404).json({
-                message: "No user found"
-            })
-        }
-        await (await client).SET("users", JSON.stringify(users));
-        return res.status(200).json({
-            message: "got all the users",
-            users
-        })
-    }
-    const cachedUsers = await JSON.parse(rawCachedUsers);
-    return res.status(200).json({
-        message: "cached users",
-        users: cachedUsers
-    })
-})
+//     const rawCachedUsers = await (await client).GET("users");
+//     if(!rawCachedUsers){
+//         const users = await User.find();    
+//         if(!users){
+//             return res.status(404).json({
+//                 message: "No user found"
+//             })
+//         }
+//         await (await client).SET("users", JSON.stringify(users));
+//         return res.status(200).json({
+//             message: "got all the users",
+//             users
+//         })
+//     }
+//     const cachedUsers = await JSON.parse(rawCachedUsers);
+//     return res.status(200).json({
+//         message: "cached users",
+//         users: cachedUsers
+//     })
+// })
 
 app.get("/users/:id", async(req,res) => {
     const { id } = req.params;
-    
-    const rawUser = await (await client).GET(`user:${id}`);
-    let cachedUser:any = null;
-    if(rawUser) {
-        cachedUser = await JSON.parse(rawUser);
-    }
+    const userId = new Types.ObjectId(id);
+    const cachedUser = await getCachedUser(userId);
 
     let user:any = null;
     if(cachedUser == null){
@@ -103,7 +102,7 @@ app.get("/users/:id", async(req,res) => {
                 message: "User not found"
             })
         }
-        await (await client).SET(`user:${user._id}`, JSON.stringify(user));
+        await cacheUser(user._id, user);
         return res.status(200).json({
             message: "user data (no cache)",
             user: user
@@ -143,8 +142,8 @@ app.put("/users/:id", async (req,res) => {
     
     // now update the cache or we can just delete the cache and when user reqs it will then cached
     // will just update the data directly (if user's cache is available)
-    await (await client).DEL(`user:${id}`);
-    await (await client).SET(`user:${id}`, JSON.stringify(updatedUser))
+    await deleteCachedUser(new Types.ObjectId(id));
+    await cacheUser(new Types.ObjectId(id), updatedUser);
     
     return res.status(200).json({
         message: "User data updated",
@@ -166,7 +165,7 @@ app.delete("/users/:id", async (req,res) => {
     }
 
     // deleting cache before returing
-    await (await client).DEL(`user:${id}`);
+    await deleteCachedUser(new Types.ObjectId(id));
 
     return res.status(200).json({
         message: "User deleted"
