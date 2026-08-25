@@ -18,7 +18,7 @@ app.get("/", (req,res) => {
     res.json({msg: "working", ip: req.ip});
 })
 
-app.post("/users", await rateLimiter(5,60), async (req,res) => {
+app.post("/users", rateLimiter("rate-limit:POST:/users:",5,60), async (req,res) => {
     // get the email and password
     const {email, password, city, contact} = req.body;
     
@@ -90,7 +90,7 @@ app.post("/users", await rateLimiter(5,60), async (req,res) => {
 //     })
 // })
 
-app.get("/users/:id", await rateLimiter(60,60) , async(req,res) => {
+app.get("/users/:id", rateLimiter("rate-limit:GET:/users:id:",60,60) , async(req,res) => {
     const { id } = req.params;
     const userId = new Types.ObjectId(id as string);
     const cachedUser = await getCachedUser(userId);
@@ -117,7 +117,7 @@ app.get("/users/:id", await rateLimiter(60,60) , async(req,res) => {
 })
 
 
-app.put("/users/:id",await rateLimiter(20,60), async (req,res) => {
+app.put("/users/:id",rateLimiter("rate-limit:PUT:/users:id:",20,60), async (req,res) => {
     const {city, contact} = req.body;
     const {id} = req.params;
 
@@ -131,7 +131,7 @@ app.put("/users/:id",await rateLimiter(20,60), async (req,res) => {
     if(city != null) update.city = city;
     if(contact != null) update.contact = contact;
 
-    const updatedUser = await User.findOneAndUpdate({_id: id}, {$set: update}, { new: true});
+    const updatedUser = await User.findOneAndUpdate({_id: id}, {$set: update}, { returnDocument: "after" });
     
     // check if any match found : if no match found will return 404
     if(!updatedUser){
@@ -153,7 +153,7 @@ app.put("/users/:id",await rateLimiter(20,60), async (req,res) => {
 
 })
 
-app.delete("/users/:id", await rateLimiter(10,60), async (req,res) => {
+app.delete("/users/:id", rateLimiter("rate-limit:DELETE:/users:id:",10,60), async (req,res) => {
     const {id} = req.params;
 
     const user = await User.findOneAndDelete({_id: id});
