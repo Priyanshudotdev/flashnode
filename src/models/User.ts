@@ -1,39 +1,39 @@
-import { model, Schema, Document } from "mongoose";
+import { model, Schema } from "mongoose";
 
 export interface IUser {
-    email: string;
-    password: string;
-    city?: string;
-    contact?: string;
-    createdAt?: Date;
-    updatedAt?: Date;
+	email: string;
+	password: string;
+	city?: string;
+	contact?: string;
+	createdAt?: Date;
+	updatedAt?: Date;
 }
 
 const userSchema = new Schema<IUser>(
-    {
-        email: {
-            type: String,
-            required: true,
-            unique: true,
-            lowercase: true,
-            trim: true,
-        },
-        password: {
-            type: String,
-            required: true,
-        },
-        city: {
-            type: String,
-            trim: true,
-        },
-        contact: {
-            type: String,
-            trim: true,
-        },
-    },
-    {
-        timestamps: true,
-    }
+	{
+		email: {
+			type: String,
+			required: true,
+			unique: true,
+			lowercase: true,
+			trim: true,
+		},
+		password: {
+			type: String,
+			required: true,
+		},
+		city: {
+			type: String,
+			trim: true,
+		},
+		contact: {
+			type: String,
+			trim: true,
+		},
+	},
+	{
+		timestamps: true,
+	},
 );
 
 export const User = model<IUser>("User", userSchema);

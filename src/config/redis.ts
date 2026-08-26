@@ -1,66 +1,65 @@
+import type { Types } from "mongoose";
 import { createClient } from "redis";
-import { IUser } from "../models/User.js";
-import { Types } from "mongoose";
+import type { IUser } from "../models/User.js";
 
 export const createRedisClient = async () => {
-    const client = await createClient()
-    .on("error", (err) => console.log("Redis Client Error", err))
-    .connect();
+	const client = await createClient()
+		.on("error", (err) => console.log("Redis Client Error", err))
+		.connect();
 
-    return client;
-}
-
+	return client;
+};
 
 export const client = createRedisClient();
 type IUserId = Types.ObjectId;
 
-export const cacheUser = async (userId:IUserId, user:IUser) => {
-    if(!userId) return null;
+export const cacheUser = async (userId: IUserId, user: IUser) => {
+	if (!userId) return null;
 
-    await (await client).SET(`user:${userId}`, JSON.stringify(user));
-    await (await client).EXPIRE(`user:${userId}`, 60);
-    
-    return true;
-}
+	await (await client).SET(`user:${userId}`, JSON.stringify(user));
+	await (await client).EXPIRE(`user:${userId}`, 60);
 
-export const getCachedUser = async(userId:IUserId) => {
-    if(!userId) return null;
+	return true;
+};
 
-    const rawCachedUser = await (await client).GET(`user:${userId}`);
-    if(!rawCachedUser) return null;
+export const getCachedUser = async (userId: IUserId) => {
+	if (!userId) return null;
 
-    const cachedUser = JSON.parse(rawCachedUser);
-    return cachedUser;
-}
+	const rawCachedUser = await (await client).GET(`user:${userId}`);
+	if (!rawCachedUser) return null;
 
-export const deleteCachedUser = async(userId:IUserId) => {
-    if(!userId) return null;
+	const cachedUser = JSON.parse(rawCachedUser);
+	return cachedUser;
+};
 
-    const cachedUser = await (await client).DEL(`user:${userId}`);
-    return cachedUser;
-}
+export const deleteCachedUser = async (userId: IUserId) => {
+	if (!userId) return null;
 
-export const createRateLimitCache = async (cacheKey:string, time: number) => {
-    if(!cacheKey) return null;
+	const cachedUser = await (await client).DEL(`user:${userId}`);
+	return cachedUser;
+};
 
-    await (await client).SET(cacheKey, 1);
-    await (await client).EXPIRE(cacheKey, time);
-}
+export const createRateLimitCache = async (cacheKey: string, time: number) => {
+	if (!cacheKey) return null;
 
-export const getRateLimitCache = async (cacheKey:string) => {
-    if(!cacheKey) return null;
-    
-    return await (await client).GET(cacheKey);
-}
+	await (await client).SET(cacheKey, 1);
+	await (await client).EXPIRE(cacheKey, time);
+};
 
-export const increamenttRateLimitCache = async(cacheKey:string) => {
-    if(!cacheKey) return null;
+export const getRateLimitCache = async (cacheKey: string) => {
+	if (!cacheKey) return null;
 
-    return await (await client).INCR(cacheKey);
-}
+	return await (await client).GET(cacheKey);
+};
 
-export const decreamentRateLimitCache = async(cacheKey:string) => {
-    if(!cacheKey) return null;
+export const increamenttRateLimitCache = async (cacheKey: string) => {
+	if (!cacheKey) return null;
 
-    return await (await client).DECR(cacheKey);
-}
+	return await (await client).INCR(cacheKey);
+};
+
+export const decreamentRateLimitCache = async (cacheKey: string) => {
+	if (!cacheKey) return null;
+
+	return await (await client).DECR(cacheKey);
+};
