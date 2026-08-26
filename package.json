@@ -1,33 +1,42 @@
 {
-  "name": "first_redis_server",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "dev": "tsx watch src/server.ts",
-    "build": "tsc"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "devEngines": {
-    "packageManager": {
-      "name": "pnpm",
-      "version": "^11.0.8",
-      "onFail": "download"
-    }
-  },
-  "type": "module",
-  "dependencies": {
-    "bullmq": "^6.2.1",
-    "express": "^5.2.1",
-    "mongoose": "^9.9.3",
-    "redis": "^6.2.1"
-  },
-  "devDependencies": {
-    "@types/express": "^5.0.6",
-    "@types/node": "^26.2.0",
-    "tsx": "^4.23.12",
-    "typescript": "^7.0.2"
-  }
+	"name": "first_redis_server",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"dev": "tsx watch src/server.ts",
+		"build": "tsc",
+		"lint": "biome lint .",
+		"lint:fix": "biome lint --write .",
+		"format": "biome format .",
+		"format:write": "biome format --write .",
+		"check": "biome check .",
+		"fix": "biome check --write ."
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"devEngines": {
+		"packageManager": {
+			"name": "pnpm",
+			"version": "^11.0.8",
+			"onFail": "download"
+		}
+	},
+	"type": "module",
+	"dependencies": {
+		"@bull-board/api": "^9.4.0",
+		"@bull-board/express": "^9.4.0",
+		"bullmq": "^6.2.1",
+		"express": "^5.2.1",
+		"mongoose": "^9.9.3",
+		"redis": "^6.2.1"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^2.5.10",
+		"@types/express": "^5.0.6",
+		"@types/node": "^26.2.0",
+		"tsx": "^4.23.12",
+		"typescript": "^7.0.2"
+	}
 }
