@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from "express";
-import { createRateLimitCache, getRateLimitCache, increamenttRateLimitCache } from "./redis.js";
+import { createRateLimitCache, getRateLimitCache, increamenttRateLimitCache } from "../config/redis.js";
 
 export const rateLimiter = (cacheKey:string, rateLimit:number, time:number) => {
     return async (req: Request, res:Response, next:NextFunction) => {
