@@ -1,6 +1,7 @@
 import { createNodeRedisClient, Queue } from "bullmq";
-import { client } from "../../config/redis.js";
+import { createRedisClient } from "../../config/redis.js";
 
-export const connection = createNodeRedisClient(await client);
+const redisClient = await createRedisClient();
+export const connection = createNodeRedisClient(redisClient);
 // Queue placeholder file for email queue
-export const emailQueue = new Queue('email-tasks', { connection });
+export const emailQueue = new Queue("email-tasks", { connection });
