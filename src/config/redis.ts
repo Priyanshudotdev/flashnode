@@ -1,5 +1,5 @@
 import { createClient } from "redis";
-import { IUser } from "./schema.js";
+import { IUser } from "../models/User.js";
 import { Types } from "mongoose";
 
 export const createRedisClient = async () => {
@@ -11,7 +11,7 @@ export const createRedisClient = async () => {
 }
 
 
-const client = createRedisClient();
+export const client = createRedisClient();
 type IUserId = Types.ObjectId;
 
 export const cacheUser = async (userId:IUserId, user:IUser) => {
