@@ -2,6 +2,7 @@ import { createBullBoard } from "@bull-board/api";
 import { BullMQAdapter } from "@bull-board/api/bullMQAdapter";
 import { ExpressAdapter } from "@bull-board/express";
 import express from "express";
+import { dlq } from "./background/queues/dead-letter.queue.js";
 import { emailQueue } from "./background/queues/email.queue.js";
 import { connectToDB } from "./config/db.js";
 import userRoutes from "./routes/user.routes.js";
@@ -12,7 +13,7 @@ const serverAdapter = new ExpressAdapter();
 serverAdapter.setBasePath("/admin/queues");
 
 createBullBoard({
-	queues: [new BullMQAdapter(emailQueue)],
+	queues: [new BullMQAdapter(emailQueue), new BullMQAdapter(dlq)],
 	serverAdapter,
 });
 

@@ -51,9 +51,15 @@ export const createUser = async (req: Request, res: Response) => {
 	//store it in redis
 	await cacheUser(userId, user);
 
-	await emailQueue.add("email-tasks", {
-		email: user.email,
-	});
+	await emailQueue.add(
+		"email-tasks",
+		{ email: user.email },
+		{
+			attempts: 2,
+			backoff: { type: "exponential", delay: 5000 },
+			delay: 10 * 1000,
+		},
+	);
 
 	return res.status(201).json({
 		message: "User created successfully",
