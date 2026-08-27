@@ -53,11 +53,45 @@ export const createUser = async (req: Request, res: Response) => {
 
 	await emailQueue.add(
 		"email-tasks",
-		{ email: user.email },
+		{ name: "WELCOME_EMAIL", email: user.email },
 		{
 			attempts: 2,
 			backoff: { type: "exponential", delay: 5000 },
 			delay: 10 * 1000,
+			priority: 1,
+		},
+	);
+
+	await emailQueue.add(
+		"email-tasks",
+		{ name: "PASSWORD_RESET_EMAIL", email: user.email },
+		{
+			attempts: 2,
+			backoff: { type: "exponential", delay: 5000 },
+			delay: 5 * 1000,
+			priority: 3,
+		},
+	);
+
+	await emailQueue.add(
+		"email-tasks",
+		{ name: "PAYMENT_CONFIRMATION_EMAIL", email: user.email },
+		{
+			attempts: 2,
+			backoff: { type: "exponential", delay: 5000 },
+			delay: 5 * 1000,
+			priority: 5,
+		},
+	);
+
+	await emailQueue.add(
+		"email-tasks",
+		{ name: "VERFICATION_EMAIL", email: user.email },
+		{
+			attempts: 2,
+			backoff: { type: "exponential", delay: 5000 },
+			delay: 5 * 1000,
+			priority: 0,
 		},
 	);
 
