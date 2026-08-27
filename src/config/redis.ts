@@ -1,6 +1,6 @@
 import type { Types } from "mongoose";
 import { createClient } from "redis";
-import type { IUser } from "../models/User.js";
+import type { IUser } from "../models/user.js";
 
 export const createRedisClient = async () => {
 	const client = await createClient()

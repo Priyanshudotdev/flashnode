@@ -2,7 +2,7 @@ import type { Request, Response } from "express";
 import { Types } from "mongoose";
 import { emailQueue } from "../background/queues/email.queue.js";
 import { cacheUser, deleteCachedUser, getCachedUser } from "../config/redis.js";
-import { User } from "../models/User.js";
+import { User } from "../models/user.js";
 
 type IUpdate = {
 	city?: string;
