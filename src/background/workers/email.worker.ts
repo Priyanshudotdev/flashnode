@@ -38,6 +38,10 @@ const emailWorker = new Worker(
 	{
 		connection,
 		concurrency: 50,
+		limiter: {
+			max: 5,
+			duration: 10000,
+		},
 	},
 );
 
